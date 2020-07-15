@@ -1,0 +1,62 @@
+version: "3"
+services:
+
+  rabbitmq:
+    restart: on-failure
+    image: rabbitmq:management
+    ports:
+      - 5672:5672
+      - 15672:15672
+    networks:
+      - radist
+    volumes:
+      - ./rabbitmq:/var/lib/rabbitmq
+
+  postgres:
+    restart: on-failure
+    image: postgres:10.6-alpine
+    hostname: postgres
+    ports:
+      - 5432:5432
+    networks:
+      - radist
+    environment:
+      - POSTGRES_PASSWORD=radist
+    volumes:
+      - ./postgresql:/var/lib/postgresql/data
+
+
+
+  web:
+    build: web/
+    command: python main.py
+    depends_on:
+      - postgres
+      - rabbitmq
+    ports:
+      - 8080:8080
+    networks:
+      - radist
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq/
+      - PG_URL=postgresql://postgres:radist@postgres/postgres
+      - RABBITMQ_EXCHANGE=messages
+
+  worker:
+    build: worker/
+    command: python worker.py
+    depends_on:
+      - postgres
+      - rabbitmq
+    networks:
+      - radist
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq/
+      - PG_URL=postgresql://postgres:radist@postgres/postgres
+      - RABBITMQ_EXCHANGE=messages
+      - KEY=12345
+
+networks:
+  radist:
+
+
