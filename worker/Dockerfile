@@ -10,4 +10,3 @@ COPY . /home/code/worker
 
 CMD ["python3.7", "worker.py"]
 
-EXPOSE 8081/tcp

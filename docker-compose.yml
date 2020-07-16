@@ -54,7 +54,7 @@ services:
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq/
       - PG_URL=postgresql://postgres:radist@postgres/postgres
       - RABBITMQ_EXCHANGE=messages
-      - KEY=12345
+      - KEY=1111
 
 networks:
   radist:

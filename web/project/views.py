@@ -20,8 +20,9 @@ async def add_message(request):
     message = aio_pika.Message(
         msg_body
     )
+    resp = {'status':'success', 'id':msg.id}
     await exchange.publish(message, routing_key=key)
-    return web.Response(status=200, text="Success, id={}".format(msg.id))
+    return web.Response(status=200, text=json.dumps(resp))
 
 
 async def get_status_message(request):
@@ -31,4 +32,8 @@ async def get_status_message(request):
         return web.Response(status=404, text="Not found")
     status = await Message.select('status').where(
     Message.id == id).gino.scalar()
-    return web.Response(status=200, text="status={}".format(status.value))
+    try:
+        resp = {'status': status.value}
+    except AttributeError:
+        return web.Response(status=404, text="Not found")
+    return web.Response(status=200, text=json.dumps(resp))
