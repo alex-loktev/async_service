@@ -8,7 +8,7 @@ from models.models import *
 from models.config import *
 
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(name)s %(module)s - %(funcName)s: %(message)s')
 
 
 async def on_message(message: IncomingMessage):
