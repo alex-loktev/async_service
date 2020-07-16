@@ -1,26 +1,27 @@
 import os
 import asyncio
 import json
+import logging
 
 from aio_pika import connect, IncomingMessage, ExchangeType
 from models.models import *
 from models.config import *
 
 
+logging.basicConfig(level=logging.INFO)
+
+
 async def on_message(message: IncomingMessage):
     with message.process():
+        logging.info("Message processing")
         data = json.loads(message.body.decode())
         msg = await Message.get(data['id'])
         await msg.update(status=MessageStatus.PROCESSED).apply()
-        print('id={}, receiver={}, body={}'.format(
-                data['id'],
-                data['receiver'],
-                data['body']
-            )
-        )
+        logging.info("Message update")
 
 
 async def main():
+    logging.info("Worker started")
     await db.set_bind(PG_URL)
     await db.gino.create_all()
     connection = await connect(RABBITMQ_URL)
@@ -34,7 +35,9 @@ async def main():
         durable=True
     )
     await queue.bind(exchange, routing_key=KEY)
+    logging.info("Connect to exchange and bind queue with key = {}".format(KEY))
     await queue.consume(on_message)
+
 
 if __name__ == "__main__":
     loop = asyncio.get_event_loop()

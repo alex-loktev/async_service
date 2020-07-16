@@ -12,7 +12,13 @@ async def add_message(request):
     try:
         data = await request.json()
     except json.decoder.JSONDecodeError:
-        return web.Response(status=400, text="message is empty")
+        request.app.logger.info('Got a message without body')
+        return web.json_response({
+                                    'success': False,
+                                    'error': 'Message is empty'
+                                 },
+                                 status=400)
+    request.app.logger.info('Got a message: {} with key = {}'.format(data, key))
     msg = await Message.create(body=data, status=MessageStatus.RECEIVED)
     data['id'] = msg.id
     exchange = request.app['exchange']
@@ -20,20 +26,35 @@ async def add_message(request):
     message = aio_pika.Message(
         msg_body
     )
-    resp = {'status':'success', 'id':msg.id}
     await exchange.publish(message, routing_key=key)
-    return web.Response(status=200, text=json.dumps(resp))
+    request.app.logger.info('Sent a message to exchange (message:{})'.format(data))
+    return web.json_response({'success': True, 'id': msg.id}, status=200)
 
 
 async def get_status_message(request):
     try:
         id = int(request.match_info['id'])
     except ValueError:
-        return web.Response(status=404, text="Not found")
+        request.app.logger.info('Got not valid id')
+        return web.json_response({
+                                  'success': False,
+                                  'error': 'Message\'s id is not valid'},
+                                 status=400
+                                 )
     status = await Message.select('status').where(
     Message.id == id).gino.scalar()
     try:
-        resp = {'status': status.value}
+        status = status.value
     except AttributeError:
-        return web.Response(status=404, text="Not found")
-    return web.Response(status=200, text=json.dumps(resp))
+        request.app.logger.info('Message is not found')
+        return web.json_response({
+                                  'success': False,
+                                  'error': 'Message is not found'
+                                  },
+                                 status=404)
+    request.app.logger.info('Get message with id = {}'.format(id))
+    return web.json_response({
+                                'success': True,
+                                'message_status': status
+                             },
+                             status=200)

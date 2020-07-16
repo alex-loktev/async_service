@@ -1,11 +1,15 @@
 import os
 import gino
 import aio_pika
+import logging
 
 from aiohttp import web
 from project.urls import urls
 from project.models import db
 from project.config import PG_URL, RABBITMQ_URL, RABBITMQ_EXCHANGE
+
+
+logging.basicConfig(level=logging.INFO)
 
 
 async def connect_rabbitmq(app):
@@ -45,5 +49,5 @@ def main():
 
 
 if __name__ == "__main__":
-    print()
+    logging.info('Server started')
     main()
