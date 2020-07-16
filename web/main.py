@@ -9,7 +9,7 @@ from project.models import db
 from project.config import PG_URL, RABBITMQ_URL, RABBITMQ_EXCHANGE
 
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(name)s %(module)s - %(funcName)s: %(message)s')
 
 
 async def connect_rabbitmq(app):
