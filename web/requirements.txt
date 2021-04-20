@@ -2,7 +2,7 @@ aio-pika==6.6.1
 aiohttp==3.6.2
 aiormq==3.2.2
 async-timeout==3.0.1
-asyncpg==0.20.1
+asyncpg==0.21.0
 attrs==19.3.0
 chardet==3.0.4
 gino==1.0.1
